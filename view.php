@@ -44,6 +44,9 @@ $event->add_record_snapshot('course', $course);
 $event->add_record_snapshot('proposal', $proposal);
 $event->trigger();
 
+$completion = new completion_info($course);
+$completion->set_module_viewed($cm);
+
 $PAGE->set_url('/mod/proposal/view.php', ['id' => $cm->id]);
 $PAGE->set_title(format_string($proposal->name));
 $PAGE->set_heading(format_string($course->fullname));

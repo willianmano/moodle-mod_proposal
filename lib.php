@@ -99,96 +99,80 @@ function proposal_delete_instance($id) {
         return false;
     }
 
+    $entries = $DB->get_records('proposal_entries', ['proposalid' => $id]);
+
+    foreach ($entries as $entry) {
+        $DB->delete_records('proposal_entry_ratings', ['entryid' => $entry->id]);
+    }
+
+    $DB->delete_records('proposal_entries', ['proposalid' => $id]);
+
     $DB->delete_records('proposal', ['id' => $id]);
 
     return true;
 }
 
 /**
- * Returns the lists of all browsable file areas within the given module context.
+ * Add a get_coursemodule_info function in case any survey type wants to add 'extra' information
+ * for the course (see resource).
  *
- * The file area 'intro' for the activity introduction field is added automatically
- * by {@see file_browser::get_file_info_context_module()}.
+ * Given a course_module object, this function returns any "extra" information that may be needed
+ * when printing this activity in a course listing.  See get_array_of_activities() in course/lib.php.
  *
- * @package     mod_proposal
- * @category    files
- *
- * @param stdClass $course
- * @param stdClass $cm
- * @param stdClass $context
- * @return string[].
+ * @param stdClass $coursemodule The coursemodule object (record).
+ * @return cached_cm_info An object on information that the courses
+ *                        will know about (most noticeably, an icon).
  */
-function proposal_get_file_areas($course, $cm, $context) {
-    return [];
-}
+function proposal_get_coursemodule_info($coursemodule) {
+    global $DB;
 
-/**
- * File browsing support for mod_proposal file areas.
- *
- * @package     mod_proposal
- * @category    files
- *
- * @param file_browser $browser
- * @param array $areas
- * @param stdClass $course
- * @param stdClass $cm
- * @param stdClass $context
- * @param string $filearea
- * @param int $itemid
- * @param string $filepath
- * @param string $filename
- * @return file_info Instance or null if not found.
- */
-function proposal_get_file_info($browser, $areas, $course, $cm, $context, $filearea, $itemid, $filepath, $filename) {
-    return null;
-}
-
-/**
- * Serves the files from the mod_proposal file areas.
- *
- * @package     mod_proposal
- * @category    files
- *
- * @param stdClass $course The course object.
- * @param stdClass $cm The course module object.
- * @param stdClass $context The mod_proposal's context.
- * @param string $filearea The name of the file area.
- * @param array $args Extra arguments (itemid, path).
- * @param bool $forcedownload Whether or not force download.
- * @param array $options Additional options affecting the file serving.
- */
-function proposal_pluginfile($course, $cm, $context, $filearea, $args, $forcedownload, $options = []) {
-    global $DB, $CFG;
-
-    if ($context->contextlevel != CONTEXT_MODULE) {
-        send_file_not_found();
+    $dbparams = ['id' => $coursemodule->instance];
+    $fields = 'id, name, intro, introformat, completionsubmit';
+    if (!$proposal = $DB->get_record('proposal', $dbparams, $fields)) {
+        return false;
     }
 
-    require_login($course, true, $cm);
-    send_file_not_found();
+    $result = new cached_cm_info();
+    $result->name = $proposal->name;
+
+    if ($coursemodule->showdescription) {
+        // Convert intro to html. Do not filter cached version, filters run at display time.
+        $result->content = format_module_intro('proposal', $proposal, $coursemodule->id, false);
+    }
+
+    // Populate the custom completion rules as key => value pairs, but only if the completion mode is 'automatic'.
+    if ($coursemodule->completion == COMPLETION_TRACKING_AUTOMATIC) {
+        $result->customdata['customcompletionrules']['completionsubmit'] = $proposal->completionsubmit;
+    }
+
+    return $result;
 }
 
 /**
- * Extends the global navigation tree by adding mod_proposal nodes if there is a relevant content.
+ * Callback which returns human-readable strings describing the active completion custom rules for the module instance.
  *
- * This can be called by an AJAX request so do not rely on $PAGE as it might not be set up properly.
- *
- * @param navigation_node $proposalnode An object representing the navigation tree node.
- * @param stdClass $course
- * @param stdClass $module
- * @param cm_info $cm
+ * @param cm_info|stdClass $cm object with fields ->completion and ->customdata['customcompletionrules']
+ * @return array $descriptions the array of descriptions for the custom rules.
  */
-function proposal_extend_navigation($proposalnode, $course, $module, $cm) {
-}
+function mod_proposal_get_completion_active_rule_descriptions($cm) {
+    // Values will be present in cm_info, and we assume these are up to date.
+    if (empty($cm->customdata['customcompletionrules'])
+        || $cm->completion != COMPLETION_TRACKING_AUTOMATIC) {
+        return [];
+    }
 
-/**
- * Extends the settings navigation with the mod_proposal settings.
- *
- * This function is called when the context for the page is a mod_proposal module.
- * This is not called by AJAX so it is safe to rely on the $PAGE.
- *
- * @param settings_navigation $settingsnav {@see settings_navigation}
- * @param navigation_node $proposalnode {@see navigation_node}
- */
-function proposal_extend_settings_navigation($settingsnav, $proposalnode = null) {
+    $descriptions = [];
+    foreach ($cm->customdata['customcompletionrules'] as $key => $val) {
+        switch ($key) {
+            case 'completionsubmit':
+                if (!empty($val)) {
+                    $descriptions[] = get_string('completionsubmit', 'mod_proposal');
+                }
+                break;
+            default:
+                break;
+        }
+    }
+
+    return $descriptions;
 }

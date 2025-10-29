@@ -28,12 +28,15 @@ defined('MOODLE_INTERNAL') || die();
 $capabilities = [
 
     'mod/proposal:addinstance' => [
-        'captype' => 'addinstance',
-        'contextlevel' => CONTEXT_MODULE,
+        'riskbitmask' => RISK_XSS,
+
+        'captype' => 'write',
+        'contextlevel' => CONTEXT_COURSE,
         'archetypes' => [
             'editingteacher' => CAP_ALLOW,
+            'manager' => CAP_ALLOW,
         ],
-        'clonepermissionsfrom' => 'moodle/course:view',
+        'clonepermissionsfrom' => 'moodle/course:manageactivities',
     ],
 
     'mod/proposal:view' => [

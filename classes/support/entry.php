@@ -76,6 +76,7 @@ class entry {
         $context = \context_module::instance($cm->id);
 
         \mod_proposal\event\rate_added::create([
+            'relateduserid' => $userid,
             'objectid' => $data->entryid,
             'context' => $context,
         ]);
@@ -112,10 +113,14 @@ class entry {
         return $rate->rate;
     }
 
-    public function user_has_entry($proposalid): bool {
+    public function user_has_entry($proposalid, $userid = null): bool {
         global $DB, $USER;
 
-        $entry = $DB->get_records('proposal_entries', ['proposalid' => $proposalid, 'userid' => $USER->id]);
+        if (!$userid) {
+            $userid = $USER->id;
+        }
+
+        $entry = $DB->get_records('proposal_entries', ['proposalid' => $proposalid, 'userid' => $userid]);
 
         if ($entry) {
             return true;
