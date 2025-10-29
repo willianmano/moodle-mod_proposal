@@ -1,0 +1,44 @@
+.path-mod-proposal .text-bg-easy {
+    color: #fff !important;
+    background-color: #288754;
+}
+.path-mod-proposal .text-bg-medium {
+    color: #000 !important;
+    background-color: #FBC10C;
+}
+.path-mod-proposal .text-bg-hard {
+    color: #fff !important;
+    background-color: #DC3546;
+}
+.path-mod-proposal .userpicture {
+    width: 64px;
+    height: 64px;
+}
+.path-mod-proposal .userpicture img {
+    max-width: 100%;
+    border-radius: 50%;
+}
+
+.path-mod-proposal .star-rating {
+    direction: rtl;
+    display: inline-block;
+    cursor: pointer;
+}
+
+.path-mod-proposal .star-rating input {
+    display: none;
+}
+
+.path-mod-proposal .star-rating label {
+    color: #ddd;
+    font-size: 24px;
+    padding: 0 2px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.path-mod-proposal .star-rating label:hover,
+.path-mod-proposal .star-rating label:hover~label,
+.path-mod-proposal .star-rating input:checked~label {
+    color: #ffc107;
+}

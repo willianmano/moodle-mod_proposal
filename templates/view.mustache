@@ -1,0 +1,17 @@
+{{#canaddentry}}
+    <div class="actions mb-3">
+        <a class="btn btn-primary" href="{{config.wwwroot}}/mod/proposal/submit.php?id={{cmid}}">Adicionar uma proposta</a>
+    </div>
+{{/canaddentry}}
+
+<div class="row" id="proposals-list" data-masonry='{"percentPosition": true }'>
+    {{#entries}}
+        {{> mod_proposal/entry }}
+    {{/entries}}
+</div>
+
+{{#js}}
+    require(['jQuery', 'mod_proposal/masonry', 'mod_proposal/rating'], function($, Masonry, Rating) {
+        Rating.init();
+    });
+{{/js}}
