@@ -75,11 +75,12 @@ class entry {
         $cm = get_coursemodule_from_instance('proposal', $entry->proposalid);
         $context = \context_module::instance($cm->id);
 
-        \mod_proposal\event\rate_added::create([
+        $event = \mod_proposal\event\rate_added::create([
             'relateduserid' => $userid,
             'objectid' => $data->entryid,
             'context' => $context,
         ]);
+        $event->trigger();
 
         return $this->get_rating_avg($data->entryid);
     }
