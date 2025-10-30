@@ -43,3 +43,7 @@
 .path-mod-proposal .star-rating input:checked~label {
     color: #ffc107;
 }
+
+#page-mod-proposal-mural .activity-header {
+    display: none;
+}

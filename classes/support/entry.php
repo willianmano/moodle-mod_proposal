@@ -129,4 +129,42 @@ class entry {
 
         return false;
     }
+
+    public function get_all_for_mural(int $proposalid): array {
+        global $DB;
+
+        $entries = $DB->get_records('proposal_entries', ['proposalid' => $proposalid]);
+
+        if (!$entries) {
+            return [];
+        }
+
+        $usersupport = new user();
+        foreach ($entries as $entry) {
+            $user = $usersupport->get_by_id($entry->userid);
+
+            $entry->userfullname = fullname($DB->get_record('user', ['id' => $entry->userid]));
+            $entry->userimage = $usersupport->get_user_image_or_avatar($user);
+            $entry->timemodified = userdate($entry->timemodified);
+            $entry->difficultystr = get_string($entry->difficulty, 'mod_proposal');
+
+            $entry->rate = (int) round($this->get_rating_avg($entry->id));
+
+            $optionshtml = '';
+            for ($i = 5; $i > 0; $i--) {
+                $optionshtml .= "<input type='radio' id='star-rating-{$entry->id}-{$i}'";
+                if ($entry->rate && $entry->rate == $i) {
+                    $optionshtml .= " checked='checked' aria-checked='true' ";
+                }
+                $optionshtml .= "name='rating-{$entry->id}' value='{$i}'>";
+                $optionshtml .= "<label data-entryid='{$entry->id}' data-rate='{$i}' for='star-rating-{$entry->id}-{$i}' class='fa-solid fa-star'></label>";
+            }
+
+            $entry->optionshtml = $optionshtml;
+        }
+
+        $randomizer = new \Random\Randomizer();
+
+        return array_values($randomizer->shuffleArray($entries));
+    }
 }
