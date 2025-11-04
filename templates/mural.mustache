@@ -39,5 +39,14 @@
 
 {{#js}}
     require(['jQuery', 'mod_proposal/masonry'], function($, Masonry) {
+        window.setTimeout( function() {
+            window.location.reload();
+        }, 20000);
     });
+{{/js}}
+
+{{#js}}
+    window.setTimeout( function() {
+        window.location.reload();
+    }, 5000);
 {{/js}}
